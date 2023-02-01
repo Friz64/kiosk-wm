@@ -1,10 +1,15 @@
 #include <X11/Xlib.h>
 
 int main() {
-    Display *display = XOpenDisplay(0x0);
+    Display *display = XOpenDisplay(NULL);
     if (!display) return 1;
 
     Window root = DefaultRootWindow(display);
+
+    XWindowAttributes attr;
+    XGetWindowAttributes(display, root, &attr);
+
+    int width = attr.width, height = attr.height;
 
     // This allows us to receive CreateNotify and ConfigureNotify events.
     XSelectInput(display, root, SubstructureNotifyMask);
@@ -15,7 +20,7 @@ int main() {
 
         if (ev.type == CreateNotify) {
             // MoveResize all created windows.
-            XMoveResizeWindow(display, ev.xcreatewindow.window, 0, 0, 1920, 1080);
+            XMoveResizeWindow(display, ev.xcreatewindow.window, 0, 0, width, height);
         } else if (ev.type == ConfigureNotify) {
             // We may also need to catch windows that move or resize themselves.
             // A lot of applications resize their windows immediately after creating them.
@@ -24,10 +29,10 @@ int main() {
             if (
                 ce.x != 0
                 || ce.y != 0
-                || ce.width != 1920
-                || ce.height != 1080
+                || ce.width != width
+                || ce.height != height
             ) {
-                XMoveResizeWindow(display, ce.window, 0, 0, 1920, 1080);
+                XMoveResizeWindow(display, ce.window, 0, 0, width, height);
             }
         }
     }
